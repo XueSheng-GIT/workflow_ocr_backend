@@ -1,0 +1,6 @@
+-r requirements.txt
+
+# Development dependencies
+pytest
+python-dotenv
+pytest-cov

@@ -1,0 +1,6 @@
+.git
+.github
+.devcontainer
+.vscode
+examples
+**/__pycache__
