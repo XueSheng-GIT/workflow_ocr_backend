@@ -1,6 +1,6 @@
 # Workflow OCR Backend
 
-![Build Action](https://github.com/R0Wi-DEV/workflow_ocr_backend/actions/workflows/docker-build.yml/badge.svg)
+![Build Action](https://github.com/R0Wi-DEV/workflow_ocr_backend/actions/workflows/test.yml/badge.svg)
 
 This is an alternative backend for the [workflow_ocr](https://github.com/R0Wi-DEV/workflow_ocr) Nextcloud App.
 It's written in Python and provides a simple REST API for [ocrmypdf](https://ocrmypdf.readthedocs.io/en/latest/).
@@ -27,7 +27,6 @@ Alternatively, use the folling [`occ`](https://docs.nextcloud.com/server/latest/
 
 ```bash
 sudo -u www-data php occ app_api:app:register workflow_ocr_backend \
-	--force-scopes \
 	--info-xml https://raw.githubusercontent.com/R0Wi-DEV/workflow_ocr_backend/refs/heads/master/appinfo/info.xml
 ```
 
@@ -37,13 +36,13 @@ Use `sudo -u www-data php occ app_api --help` to get a full list of AppApi comma
 
 If you want to run both Nextcloud **and** this backend in Docker, you can use the following `docker-compose.yml` to start Nextcloud, a database and the docker-socket-proxy. 
 
-Create a new docker network first:
+**(1)** Create a new docker network first:
 
 ```bash
 docker network create nextcloud
 ```
 
-Then create a `docker-compose.yml` file with the following content:
+**(2)** Then create a `docker-compose.yml` file with the following content:
 
 ```yaml
 volumes:
@@ -121,7 +120,43 @@ services:
 
 Adjust the values for `<version>` and `NC_HAPROXY_PASSWORD` to your needs, then start the stack with `docker-compose up -d`.
 
-The Deploy Daemon configuration for this setup would look like this:
+**(3)** Before configuring the Deploy Daemon, make sure to add the Docker network DNS name (`nextcloud-in-docker`) of the Nextcloud container to the `trusted_domains` in `config/config.php`:
+
+```php
+<?php
+$CONFIG = array (
+    // ...
+    'trusted_domains' => 
+        array (
+          0 => 'localhost',
+          1 => 'nextcloud-in-docker'
+        )
+)
+```
+
+Otherwise, ExApps might not be able to connect back to your Nextcloud instance and fail with errors like this:
+
+```bash
+# Taken from "docker logs <nc-ex-app-container-id>
+File "/home/serviceuser/.local/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2461, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/home/serviceuser/.local/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 962, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/serviceuser/.local/lib/python3.12/site-packages/nc_py_api/ex_app/integration_fastapi.py", line 138, in fetch_models_task
+    nc.set_init_status(100)
+  File "/home/serviceuser/.local/lib/python3.12/site-packages/nc_py_api/nextcloud.py", line 431, in set_init_status
+    self._session.ocs(
+  File "/home/serviceuser/.local/lib/python3.12/site-packages/nc_py_api/_session.py", line 213, in ocs
+    check_error(response, info)
+  File "/home/serviceuser/.local/lib/python3.12/site-packages/nc_py_api/_exceptions.py", line 65, in check_error
+    raise NextcloudException(status_code, reason=codes(status_code).phrase, info=info)
+nc_py_api._exceptions.NextcloudException: [400] Bad Request <request: PUT /ocs/v1.php/apps/app_api/apps/status/workflow_ocr_backend>
+
+```
+
+**(4)** The Deploy Daemon configuration for this setup would look like this:
 
 <p align="center">
     <img src="./doc/img/deploy-daemon.png" width="30%"/>
