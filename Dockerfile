@@ -1,11 +1,12 @@
-FROM python:3.12-alpine3.21 AS app
+FROM pytorch/pytorch:2.6.0-cuda12.6-cudnn9-runtime AS app
 
 ARG USER=serviceuser
 ENV HOME=/home/$USER
 
-RUN apk update && \
-    apk add --no-cache sudo ocrmypdf $(apk search tesseract-ocr-data- | sed 's/-[0-9].*//') && \
-    adduser -D $USER
+RUN apt update && \
+    apt install -y sudo git curl make gnupg ocrmypdf tesseract-ocr && \
+    rm -rf /var/lib/apt/lists/* && \
+    useradd -m $USER
 
 USER $USER
 
@@ -15,7 +16,8 @@ COPY --chown=$USER:$USER requirements.txt requirements.txt
 COPY --chown=$USER:$USER main.py .
 COPY --chown=$USER:$USER workflow_ocr_backend/ ./workflow_ocr_backend
 
-RUN pip install -r requirements.txt
+RUN pip install --break-system-packages -r requirements.txt && \
+    pip install --break-system-packages git+https://github.com/ocrmypdf/OCRmyPDF-EasyOCR.git
 
 ENTRYPOINT ["python3", "-u", "main.py"]
 
@@ -25,11 +27,12 @@ COPY --chown=$USER:$USER requirements-dev.txt requirements-dev.txt
 
 # Install dev dependencies and set up sudo
 USER root
-RUN apk add --no-cache git curl make gnupg && \
+RUN apt install -y git curl make gnupg && \
+    rm -rf /var/lib/apt/lists/* && \
     echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER && \
     chmod 0440 /etc/sudoers.d/$USER
 USER $USER
-RUN pip install -r requirements-dev.txt 
+RUN pip install --break-system-packages -r requirements-dev.txt 
 
 FROM devcontainer AS test
 
