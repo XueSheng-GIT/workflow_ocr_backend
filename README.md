@@ -21,7 +21,7 @@ It will take care of all the heavy lifting like installation, orchestration, con
 
 ## Installation
 
-The easiest way to install this app is to use the [Nexcloud Appstore](https://docs.nextcloud.com/server/latest/admin_manual/exapps_management/AppAPIAndExternalApps.html#installing-exapps).
+The easiest way to install this app is to use the [Nexcloud Appstore](https://apps.nextcloud.com/apps/workflow_ocr_backend). You can find more information about how to install ExApps [here](https://docs.nextcloud.com/server/latest/admin_manual/exapps_management/AppAPIAndExternalApps.html#installing-exapps).
 
 Alternatively, use the folling [`occ`](https://docs.nextcloud.com/server/latest/admin_manual/occ_command.html) command to register the latest version of this app:
 
