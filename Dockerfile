@@ -35,4 +35,5 @@ FROM devcontainer AS test
 
 COPY --chown=$USER:$USER Makefile .
 COPY --chown=$USER:$USER test/ ./test
+COPY --chown=$USER:$USER .env .
 ENTRYPOINT ["make", "test"]
