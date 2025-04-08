@@ -59,6 +59,8 @@ def test_process_ocr_error_already_processed_file():
     response_json = response.json()
     assert "message" in response_json
     assert response_json["message"] == "page already has text! - aborting (use --force-ocr to force OCR;  see also help for the arguments --skip-text and --redo-ocr (PriorOcrFoundError)"
+    assert "ocrMyPdfExitCode" in response_json
+    assert response_json["ocrMyPdfExitCode"] == 6
 
 def test_process_ocr_error_invalid_file():
     current_dir = os.path.dirname(__file__)
@@ -72,6 +74,8 @@ def test_process_ocr_error_invalid_file():
     response_json = response.json()
     assert "message" in response_json
     assert response_json["message"] == " (UnsupportedImageFormatError)"
+    assert "ocrMyPdfExitCode" in response_json
+    assert response_json["ocrMyPdfExitCode"] == 2
 
 def test_installed_languages():
     with TestClient(APP, headers=headers) as client:

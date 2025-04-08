@@ -13,7 +13,7 @@ It contains a small REST API that encapsulates the OCRmyPDF functionality.
 
 For more information, see https://github.com/R0Wi-DEV/workflow_ocr_backend. 
 ]]></description>
-	<version>1.31.0</version>
+	<version>1.32.0</version>
 	<licence>agpl</licence>
 	<author mail="ro.windey@gmail.com" homepage="https://github.com/R0Wi">Robin Windey</author>
 	<namespace>Workflow OCR Backend</namespace>
@@ -25,13 +25,13 @@ For more information, see https://github.com/R0Wi-DEV/workflow_ocr_backend.
 	<bugs>https://github.com/R0Wi-DEV/workflow_ocr_backend/issues</bugs>
 	<repository type="git">https://github.com/R0Wi-DEV/workflow_ocr_backend.git</repository>
 	<dependencies>
-		<nextcloud min-version="31" max-version="31"/>
+		<nextcloud min-version="32" max-version="32"/>
 	</dependencies>
 	<external-app>
 		<docker-install>
 			<registry>ghcr.io</registry>
 			<image>r0wi-dev/workflow_ocr_backend</image>
-			<image-tag>1.31.0</image-tag>
+			<image-tag>1.32.0</image-tag>
 		</docker-install>
 	</external-app>
 </info>

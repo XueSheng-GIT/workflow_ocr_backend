@@ -10,17 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/main.py",
             "console": "integratedTerminal",
-            "env": {
-                "APP_PORT": "5000",
-                "AA_VERSION": "4.0.3",
-                "APP_SECRET": "secret",
-                "APP_ID": "workflow_ocr_backend",
-                "APP_DISPLAY_NAME": "Workflow OCR Backend",
-                "APP_VERSION": "4.0.1",
-                "APP_HOST": "0.0.0.0",
-                "NEXTCLOUD_URL": "http://nextcloud-in-docker",
-                "AA_DOCKER_ENV": "1"
-            }
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }

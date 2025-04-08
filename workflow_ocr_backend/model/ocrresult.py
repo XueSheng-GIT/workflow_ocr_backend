@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 
 class ErrorResult(BaseModel):
     message: str = Field(description='Error message')
+    ocr_my_pdf_exit_code: int | None = Field(default=None, serialization_alias='ocrMyPdfExitCode', description='Exit code of the OCRmyPDF process (if applicable)')
 
 class OcrResult(BaseModel):
     filename: str = Field(description='Name of the file')
