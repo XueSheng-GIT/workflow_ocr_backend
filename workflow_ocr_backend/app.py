@@ -8,6 +8,8 @@ from nc_py_api import AsyncNextcloudApp, NextcloudApp
 from nc_py_api.ex_app import AppAPIAuthMiddleware, set_handlers
 import logging
 
+from ocrmypdf import ExitCodeException
+
 from .model.ocrresult import ErrorResult, OcrResult
 from .ocrservice import OcrService
 
@@ -26,6 +28,10 @@ def enabled_handler(enabled: bool, _: NextcloudApp | AsyncNextcloudApp) -> str:
     # Nothing to do currently ...
     logger.debug(f"App enabled: {enabled}")
     return ""
+
+@APP.exception_handler(ExitCodeException)
+async def exit_code_exception_handler(_: Request, exc: ExitCodeException):
+    return JSONResponse({"message": f"{str(exc)} ({exc.__class__.__name__})", "ocrMyPdfExitCode": exc.exit_code}, status_code=500)
 
 @APP.exception_handler(Exception)
 async def exception_handler(_: Request, exc: Exception):
