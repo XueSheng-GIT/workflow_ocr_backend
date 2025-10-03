@@ -78,6 +78,7 @@ jobs:
 
       - name: Build and push latest Docker image
         uses: docker/build-push-action@v6
+        if: github.ref == 'refs/heads/master'
         with:
           context: .
           push: ${{ github.ref == 'refs/heads/master' }}
