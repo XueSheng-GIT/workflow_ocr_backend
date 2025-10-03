@@ -4,3 +4,4 @@
 pytest
 python-dotenv
 pytest-cov
+httpx
