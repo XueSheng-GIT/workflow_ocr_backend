@@ -21,17 +21,17 @@ For more information, see https://github.com/R0Wi-DEV/workflow_ocr_backend.
 	<category>tools</category>
 	<category>organization</category>
 	<category>workflow</category>
-	<website>https://github.com/R0Wi-DEV/workflow_ocr_backend</website>
-	<bugs>https://github.com/R0Wi-DEV/workflow_ocr_backend/issues</bugs>
-	<repository type="git">https://github.com/R0Wi-DEV/workflow_ocr_backend.git</repository>
+	<website>https://github.com/XueSheng-GIT/workflow_ocr_backend</website>
+	<bugs>https://github.com/XueSheng-GIT/workflow_ocr_backend/issues</bugs>
+	<repository type="git">https://github.com/XueSheng-GIT/workflow_ocr_backend.git</repository>
 	<dependencies>
 		<nextcloud min-version="32" max-version="32"/>
 	</dependencies>
 	<external-app>
 		<docker-install>
 			<registry>ghcr.io</registry>
-			<image>r0wi-dev/workflow_ocr_backend</image>
-			<image-tag>1.32.0</image-tag>
+			<image>xuesheng-git/workflow_ocr_backend</image>
+			<image-tag>1.32.0-easyocr-cuda</image-tag>
 		</docker-install>
 	</external-app>
 </info>
