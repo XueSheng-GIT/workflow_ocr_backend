@@ -1,4 +1,4 @@
-FROM pytorch/pytorch:2.9.0-cuda12.8-cudnn9-runtime AS app
+FROM pytorch/pytorch:2.9.0-cuda13.0-cudnn9-runtime AS app
 
 ARG USER=serviceuser
 ENV HOME=/home/$USER
