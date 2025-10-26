@@ -15,11 +15,13 @@ WORKDIR /app
 COPY --chown=$USER:$USER requirements.txt requirements.txt
 COPY --chown=$USER:$USER main.py .
 COPY --chown=$USER:$USER workflow_ocr_backend/ ./workflow_ocr_backend
+COPY --chown=$USER:$USER --chmod=755 healthcheck.sh /healthcheck.sh
 
 RUN pip install --break-system-packages -r requirements.txt && \
     pip install --break-system-packages git+https://github.com/ocrmypdf/OCRmyPDF-EasyOCR.git
 
 ENTRYPOINT ["python3", "-u", "main.py"]
+HEALTHCHECK --interval=60s --timeout=10s --retries=2 CMD /healthcheck.sh
 
 FROM app AS devcontainer
 
