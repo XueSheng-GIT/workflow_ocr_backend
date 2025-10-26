@@ -31,7 +31,7 @@ For more information, see https://github.com/R0Wi-DEV/workflow_ocr_backend.
 		<docker-install>
 			<registry>ghcr.io</registry>
 			<image>xuesheng-git/workflow_ocr_backend</image>
-			<image-tag>1.32.0-easyocr-cuda</image-tag>
+			<image-tag>1.32.0.1-easyocr-cuda</image-tag>
 		</docker-install>
 	</external-app>
 </info>
