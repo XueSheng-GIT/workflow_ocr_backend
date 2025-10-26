@@ -21,7 +21,7 @@ RUN pip install --break-system-packages -r requirements.txt && \
     pip install --break-system-packages git+https://github.com/ocrmypdf/OCRmyPDF-EasyOCR.git
 
 ENTRYPOINT ["python3", "-u", "main.py"]
-HEALTHCHECK --interval=60s --timeout=10s --retries=2 CMD /healthcheck.sh
+HEALTHCHECK --interval=10s --timeout=10s --retries=5 CMD /healthcheck.sh
 
 FROM app AS devcontainer
 
