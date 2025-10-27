@@ -1,6 +1,7 @@
 FROM python:3.12-alpine3.21 AS app
 
 ARG USER=serviceuser
+ARG FRP_VERSION=0.61.1
 ENV HOME=/home/$USER
 
 RUN apk update && \
@@ -11,14 +12,14 @@ RUN apk update && \
 RUN set -ex; \
     ARCH=$(uname -m); \
     if [ "$ARCH" = "aarch64" ]; then \
-      FRP_URL="https://raw.githubusercontent.com/nextcloud/HaRP/main/exapps_dev/frp_0.61.1_linux_arm64.tar.gz"; \
+      FRP_URL="https://raw.githubusercontent.com/nextcloud/HaRP/main/exapps_dev/frp_${FRP_VERSION}_linux_arm64.tar.gz"; \
     else \
-      FRP_URL="https://raw.githubusercontent.com/nextcloud/HaRP/main/exapps_dev/frp_0.61.1_linux_amd64.tar.gz"; \
+      FRP_URL="https://raw.githubusercontent.com/nextcloud/HaRP/main/exapps_dev/frp_${FRP_VERSION}_linux_amd64.tar.gz"; \
     fi; \
     echo "Downloading FRP client from $FRP_URL"; \
     curl -L "$FRP_URL" -o /tmp/frp.tar.gz; \
     tar -C /tmp -xzf /tmp/frp.tar.gz; \
-    mv /tmp/frp_0.61.1_linux_* /tmp/frp; \
+    mv /tmp/frp_${FRP_VERSION}_linux_* /tmp/frp; \
     cp /tmp/frp/frpc /usr/local/bin/frpc; \
     chmod +x /usr/local/bin/frpc; \
     rm -rf /tmp/frp /tmp/frp.tar.gz
