@@ -170,34 +170,8 @@ nc_py_api._exceptions.NextcloudException: [400] Bad Request <request: PUT /ocs/v
 
 ## HaRP Support (Nextcloud 32+)
 
-Since Nextcloud 32, [HaRP (AppAPI HaProxy Reversed Proxy)](https://github.com/nextcloud/HaRP) is the recommended deployment method for ExApps. This app now supports HaRP out of the box.
+Since Nextcloud 32, [HaRP (AppAPI HaProxy Reversed Proxy)](https://github.com/nextcloud/HaRP) is the recommended deployment method for ExApps, replacing Docker Socket Proxy. This app now supports HaRP out of the box.
 
-### What is HaRP?
+HaRP simplifies deployment and improves performance by enabling direct communication between clients and ExApps. The implementation is fully backward compatible with Docker Socket Proxy deployments.
 
-HaRP is a reverse proxy system that simplifies the deployment workflow for Nextcloud's AppAPI. It enables direct communication between clients and ExApps, bypassing the Nextcloud instance to improve performance and reduce complexity compared to the Docker Socket Proxy (DSP) setup.
-
-### Key Benefits
-
-- **Simplified Deployment**: Replaces more complex setups with an easy-to-use container
-- **Better Performance**: Routes requests directly to ExApps
-- **Enhanced Security**: Uses brute-force protection and basic authentication
-- **Flexible**: Supports both HTTP and HTTPS for ExApps and Nextcloud control
-
-### Installation
-
-Follow the [HaRP installation guide](https://github.com/nextcloud/HaRP#how-to-install-it) to deploy HaRP on your system. Once HaRP is running, you can install this ExApp through the Nextcloud AppStore or via the `occ` command as described in the [Installation](#installation) section.
-
-### Migration from Docker Socket Proxy
-
-If you're upgrading to Nextcloud 32 and want to migrate from DSP to HaRP:
-
-1. Install HaRP on the same Docker Engine that you were using for DSP
-2. Test deployment on HaRP using the usual "TestDeploy" button
-3. Set HaRP as the default deployment daemon for ExApps
-4. Remove the ExApp **without** deleting its data volumes:
-   - From terminal: Do not use the `--rm-data` option
-   - From UI: Do not check "Delete data when removing"
-5. Reinstall the ExApp - it will now use HaRP
-6. Remove DSP once all ExApps have been migrated
-
-For more details, see the [HaRP migration guide](https://github.com/nextcloud/HaRP#nextcloud-32-migrating-existing-exapps-from-dsp-to-harp).
+For installation and migration instructions, see the [HaRP documentation](https://github.com/nextcloud/HaRP#readme).
