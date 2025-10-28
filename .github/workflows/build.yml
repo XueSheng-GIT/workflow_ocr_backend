@@ -1,0 +1,31 @@
+name: Build Docker Image
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-docker-image:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Docker workflow
+        id: docker_setup
+        uses: ./.github/actions/docker-setup
+        with:
+          registry-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image from current branch
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.docker_setup.outputs.tags }}
+          labels: ${{ steps.docker_setup.outputs.labels }}
+          target: app
+          platforms: linux/amd64,linux/arm64
