@@ -16,26 +16,23 @@ COPY --chown=$USER:$USER main.py .
 COPY --chown=$USER:$USER workflow_ocr_backend/ ./workflow_ocr_backend
 COPY --chown=$USER:$USER start.sh /start.sh
 
-RUN pip install -r requirements.txt
-
-# Make start.sh executable
-USER root
-RUN chmod +x /start.sh
-USER $USER
+RUN chmod +x /start.sh && \
+    pip install -r requirements.txt
 
 ENTRYPOINT ["/start.sh", "python3", "-u", "main.py"]
 
 FROM app AS devcontainer
 
+ENV USER=${USER}
 COPY --chown=$USER:$USER requirements-dev.txt requirements-dev.txt
 
 # Install dev dependencies and set up sudo
 USER root
-RUN apk add --no-cache git curl make gnupg && \
+RUN apk add --no-cache git docker-cli make gnupg && \
     echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER && \
     chmod 0440 /etc/sudoers.d/$USER
 USER $USER
-RUN pip install -r requirements-dev.txt 
+RUN pip install -r requirements-dev.txt
 
 FROM devcontainer AS test
 
