@@ -9,6 +9,7 @@ import pytest
 from dotenv import dotenv_values
 
 @pytest.mark.skipif(shutil.which("docker") is None, reason="Docker CLI not available")
+@pytest.mark.docker_integration
 def test_docker_container_starts_and_creates_frpc_config():
     repo_root = Path(__file__).resolve().parent.parent
     image_tag = f"workflow-ocr-backend-test:{uuid.uuid4().hex}"
