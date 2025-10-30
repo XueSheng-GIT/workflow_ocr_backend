@@ -5,7 +5,10 @@ ENV HOME=/home/$USER
 
 RUN apk update && \
     apk add --no-cache sudo ocrmypdf $(apk search tesseract-ocr-data- | sed 's/-[0-9].*//') curl bash frp && \
-    adduser -D $USER
+    adduser -D $USER && \
+    touch /frpc.toml && \
+    chown $USER:$USER /frpc.toml && \
+    chmod 600 /frpc.toml
 
 USER $USER
 
