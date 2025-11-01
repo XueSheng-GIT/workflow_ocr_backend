@@ -38,10 +38,6 @@ class OcrService:
 
             return OcrResult(filename=file_name, content_type="application/pdf", recognized_text=sidecar_text, file_content=file_base64)
 
-        except Exception as e:
-            self.logger.error(f"Unexpected error processing {file_name}: {e}")
-            raise
-
         finally:
             output_buffer.close()
             sidecar_buffer.close()

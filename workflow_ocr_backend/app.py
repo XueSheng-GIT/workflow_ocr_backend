@@ -31,12 +31,14 @@ def enabled_handler(enabled: bool, _: NextcloudApp | AsyncNextcloudApp) -> str:
 
 @APP.exception_handler(ExitCodeException)
 async def exit_code_exception_handler(_: Request, exc: ExitCodeException):
+    logger.error(f"ExitCodeException while processing {file_name}: {e}")
     return JSONResponse({"message": f"{str(exc)} ({exc.__class__.__name__})", "ocrMyPdfExitCode": exc.exit_code}, status_code=500)
 
 @APP.exception_handler(Exception)
 async def exception_handler(_: Request, exc: Exception):
     # Exception will be logged by uvicorn automatically.
     # It will also be turned into an ErrorResult response.
+    logger.error(f"Exception while processing {file_name}: {e}")
     return JSONResponse({"message": f"{str(exc)} ({exc.__class__.__name__})"}, status_code=500)
 
 
