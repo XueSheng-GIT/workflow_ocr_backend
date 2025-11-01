@@ -4,7 +4,7 @@
 
 # Configuration
 PROCESS_NAME="main.py"
-MAX_AGE_SECONDS=600  # Maximum age in seconds (10 minutes)
+MAX_AGE_SECONDS=300  # Maximum age in seconds (5 minutes)
 
 # Get the PID of the process
 PIDS=$(pgrep -f "$PROCESS_NAME")
@@ -21,9 +21,9 @@ for PID in $PIDS; do
     # Check if ETIME exceeds the threshold
     if (( ETIME > MAX_AGE_SECONDS )); then
         echo "ERROR: $PROCESS_NAME (PID $PID) has been running for too long: $ETIME seconds."
-	# Send SIGTERM to the process
-        kill "$PID"
-        echo "Sending SIGTERM to process $PID"
+	# Send SIGKILL to the process (SIGTERM won't work)
+        kill -9 "$PID"
+        echo "Sending SIGKILL to process $PID"
         exit 1
     else
         echo "OK: $PROCESS_NAME (PID $PID) is healthy (age: $ETIME seconds)."
