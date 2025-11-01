@@ -18,7 +18,7 @@ COPY --chown=$USER:$USER workflow_ocr_backend/ ./workflow_ocr_backend
 COPY --chown=$USER:$USER --chmod=755 healthcheck.sh /healthcheck.sh
 
 RUN pip install --break-system-packages -r requirements.txt && \
-    pip install --break-system-packages -U Celery \
+    pip install --break-system-packages -U Celery && \
     pip install --break-system-packages git+https://github.com/ocrmypdf/OCRmyPDF-EasyOCR.git
 
 ENTRYPOINT ["python3", "-u", "main.py"]
