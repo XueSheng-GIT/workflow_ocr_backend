@@ -32,6 +32,17 @@ def enabled_handler(enabled: bool, _: NextcloudApp | AsyncNextcloudApp) -> str:
 @APP.exception_handler(ExitCodeException)
 async def exit_code_exception_handler(_: Request, exc: ExitCodeException):
     logger.error(f"ExitCodeException raised: {str(exc)} ({exc.__class__.__name__}), exit_code: {exc.exit_code}")
+    
+    """
+    Gracefully handle OCR_MODE_SKIP_FILE (TaggedPDFError) when using easyOCR.
+    Change exit_code to '6' instead of '2'.
+    Workaround for upstream issue: https://github.com/ocrmypdf/OCRmyPDF/issues/1551
+    """
+    if exc.exit_code == 2 and "Tagged PDF" in str(exc):
+        new_exit_code = 6
+        logger.error(f"ExitCodeException updated (workaround for upstream issue): {str(exc)} ({exc.__class__.__name__}), exit_code: {new_exit_code}")
+        return JSONResponse({"message": f"{str(exc)} ({exc.__class__.__name__})", "ocrMyPdfExitCode": new_exit_code}, status_code=500)
+    
     return JSONResponse({"message": f"{str(exc)} ({exc.__class__.__name__})", "ocrMyPdfExitCode": exc.exit_code}, status_code=500)
 
 @APP.exception_handler(Exception)
