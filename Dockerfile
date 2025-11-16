@@ -1,4 +1,4 @@
-FROM python:3.12-alpine3.21 AS app
+FROM python:3.12-alpine AS app
 
 ARG USER=serviceuser
 
@@ -8,14 +8,13 @@ ENV GOSU_VERSION=1.19
 
 RUN apk update && \
     apk add --no-cache ocrmypdf $(apk search tesseract-ocr-data- | sed 's/-[0-9].*//') curl bash frp ca-certificates && \
-    adduser -D $USER 
-
-    # TODO :: put together after testing
-RUN touch /frpc.toml && \
+    adduser -D $USER && \
+	touch /frpc.toml && \
     mkdir -p /certs && \
     chown -R $USER:$USER /frpc.toml /certs && \
     chmod 600 /frpc.toml
 
+# Install GOSU
 RUN set -eux; \
 	\
 	apk add --no-cache --virtual .gosu-deps \

@@ -57,7 +57,7 @@ jobs:
             coverage
             code-coverage-results.md
         
-  integration-test:
+  harp-integration-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -78,5 +78,5 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
 
-      - name: Run Docker Integration Tests
-        run: make docker-integrationtest
+      - name: Run HaRP Docker Integration Tests
+        run: make harp-integrationtest
