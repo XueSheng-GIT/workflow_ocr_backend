@@ -9,6 +9,7 @@ It's written in Python and provides a simple REST API for [ocrmypdf](https://ocr
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [`docker-compose` Example](#docker-compose-example)
+  - [HaRP Support (Nextcloud 32+)](#harp-support-nextcloud-32)
 
 ## Prerequisites
 
@@ -17,7 +18,9 @@ It will take care of all the heavy lifting like installation, orchestration, con
 
 1. Install [`docker`](https://docs.docker.com/engine/install/ubuntu/) on the host where the app should be installed.
 2. Install the [`AppApi`](https://docs.nextcloud.com/server/latest/admin_manual/exapps_management/AppAPIAndExternalApps.html#installing-appapi) app. It will take care of the installation and orchestration of the backend as Docker Container.
-3. Setup a [Deploy Daemon](https://docs.nextcloud.com/server/latest/admin_manual/exapps_management/AppAPIAndExternalApps.html#setup-deploy-daemon). It's recommended to use the [Docker Socket Proxy](https://github.com/nextcloud/docker-socket-proxy#readme) to communicate with the docker daemon.
+3. Setup a [Deploy Daemon](https://docs.nextcloud.com/server/latest/admin_manual/exapps_management/AppAPIAndExternalApps.html#setup-deploy-daemon):
+   - **For Nextcloud 32+**: It's recommended to use [HaRP (AppAPI HaProxy Reversed Proxy)](https://github.com/nextcloud/HaRP) for better performance and simplified deployment.
+   - **For older versions**: Use the [Docker Socket Proxy](https://github.com/nextcloud/docker-socket-proxy#readme) to communicate with the docker daemon.
 
 ## Installation
 
@@ -164,3 +167,11 @@ nc_py_api._exceptions.NextcloudException: [400] Bad Request <request: PUT /ocs/v
 
 >  :warning: Make sure to create the docker network `nextcloud` before starting the stack. If you don't declare the network as
 > `external`, `docker-compose` will create the network with some [project/directory prefix](https://docs.docker.com/compose/how-tos/networking/), which will cause the Deploy Daemon to fail because it doesn't find the network.
+
+## HaRP Support (Nextcloud 32+)
+
+Since Nextcloud 32, [HaRP (AppAPI HaProxy Reversed Proxy)](https://github.com/nextcloud/HaRP) is the recommended deployment method for ExApps, replacing Docker Socket Proxy. This app now supports HaRP out of the box.
+
+HaRP simplifies deployment and improves performance by enabling direct communication between clients and ExApps. The implementation is fully backward compatible with Docker Socket Proxy deployments.
+
+For installation and migration instructions, see the [HaRP documentation](https://github.com/nextcloud/HaRP#readme).
