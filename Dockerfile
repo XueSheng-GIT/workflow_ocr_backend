@@ -44,6 +44,7 @@ COPY --chown=$USER:$USER main.py .
 COPY --chown=$USER:$USER workflow_ocr_backend/ ./workflow_ocr_backend
 COPY --chown=$USER:$USER start.sh /start.sh
 RUN chmod +x /start.sh && \
+	chown -R $USER:$USER /app && \
 	pip install -r requirements.txt
 
 ENTRYPOINT ["/bin/sh", "-c", "exec gosu \"$USER\" /start.sh python3 -u main.py"]
