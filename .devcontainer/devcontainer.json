@@ -13,5 +13,9 @@
 				"pamaron.pytest-runner"
 			]
 		}
-	}
+	},
+	"mounts": [
+		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+	],
+	"postStartCommand": "sudo chown $USER:$USER /var/run/docker.sock"
 }

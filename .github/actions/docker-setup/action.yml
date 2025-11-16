@@ -2,8 +2,9 @@ name: Setup Docker workflow
 description: Shared steps for Docker builds and tests.
 inputs:
   registry-token:
-    description: Token used to authenticate against the container registry.
-    required: true
+    description: Token used to authenticate against the container registry. Optional — if not provided the login step will be skipped.
+    required: false
+    default: ''
 outputs:
   image_base:
     description: Base image name used for GHCR publishes.
@@ -32,6 +33,7 @@ runs:
         images: ${{ steps.image_base.outputs.IMAGE_BASE }}
 
     - name: Login to GitHub Container Registry
+      if: ${{ inputs.registry-token != '' }}
       uses: docker/login-action@v3
       with:
         registry: ghcr.io

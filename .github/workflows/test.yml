@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  test:
+  unit-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -15,8 +15,6 @@ jobs:
       - name: Setup Docker workflow
         id: docker_setup
         uses: ./.github/actions/docker-setup
-        with:
-          registry-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Docker test image
         uses: docker/build-push-action@v6
@@ -58,3 +56,28 @@ jobs:
           path: |
             coverage
             code-coverage-results.md
+  
+  # Note: harp tests need to run on a host where docker is available
+  harp-integration-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Docker workflow
+        id: docker_setup
+        uses: ./.github/actions/docker-setup
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dev dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Run HaRP Docker Integration Tests
+        run: make harp-integrationtest
