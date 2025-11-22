@@ -7,7 +7,7 @@ ENV HOME=/home/$USER
 ENV GOSU_VERSION=1.19
 
 RUN apt update && \
-    apt install -y sudo git curl make gnupg ocrmypdf tesseract-ocr ca-certificates gosu && \
+    apt install -y sudo git curl make gnupg ocrmypdf tesseract-ocr ca-certificates gosu unzip && \
     rm -rf /var/lib/apt/lists/* && \
     useradd -m $USER && \
 	touch /frpc.toml && \
@@ -30,6 +30,14 @@ RUN set -ex; \
     cp /tmp/frp/frpc /usr/local/bin/frpc; \
     chmod +x /usr/local/bin/frpc; \
     rm -rf /tmp/frp /tmp/frp.tar.gz
+
+# Download EasyOCR models (unzip is required!)
+RUN mkdir -p /home/$USER/.EasyOCR/model && \
+    cd /home/$USER/.EasyOCR/model && \
+    curl -fsSL -O https://github.com/JaidedAI/EasyOCR/releases/download/v1.3/latin_g2.zip && \
+    curl -fsSL -O https://github.com/JaidedAI/EasyOCR/releases/download/v1.3/english_g2.zip && \
+    curl -fsSL -O https://github.com/JaidedAI/EasyOCR/releases/download/pre-v1.1.6/craft_mlt_25k.zip && \
+    unzip '*.zip' && rm -f *.zip
 
 WORKDIR /app
 
