@@ -37,7 +37,8 @@ RUN mkdir -p /home/$USER/.EasyOCR/model && \
     curl -fsSL -O https://github.com/JaidedAI/EasyOCR/releases/download/v1.3/latin_g2.zip && \
     curl -fsSL -O https://github.com/JaidedAI/EasyOCR/releases/download/v1.3/english_g2.zip && \
     curl -fsSL -O https://github.com/JaidedAI/EasyOCR/releases/download/pre-v1.1.6/craft_mlt_25k.zip && \
-    unzip '*.zip' && rm -f *.zip
+    unzip '*.zip' && rm -f *.zip && \
+    chown -R $USER:$USER /home/$USER/.EasyOCR
 
 WORKDIR /app
 
