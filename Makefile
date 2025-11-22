@@ -6,7 +6,11 @@ deps:
 
 .PHONY: test
 test:
-	python -m pytest --cov-report html:coverage --cov-report xml:coverage/coverage.xml --cov=workflow_ocr_backend test
+	python -m pytest --cov-report html:coverage --cov-report xml:coverage/coverage.xml --cov=workflow_ocr_backend -m "not harp_integration" test
+
+.PHONY: harp-integrationtest
+harp-integrationtest:
+	python -m pytest -m "harp_integration" test
 
 .PHONY: build
 build:

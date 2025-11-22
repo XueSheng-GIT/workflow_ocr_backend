@@ -1,27 +1,75 @@
 FROM pytorch/pytorch:2.9.0-cuda13.0-cudnn9-runtime AS app
 
 ARG USER=serviceuser
+
+ENV USER=$USER
 ENV HOME=/home/$USER
+ENV GOSU_VERSION=1.19
 
 RUN apt update && \
-    apt install -y sudo git curl make gnupg ocrmypdf tesseract-ocr && \
+    apt install -y sudo git curl make gnupg ocrmypdf tesseract-ocr ca-certificates && \
     rm -rf /var/lib/apt/lists/* && \
-    useradd -m $USER
+    useradd -m $USER && \
+	touch /frpc.toml && \
+    mkdir -p /certs && \
+    chown -R $USER:$USER /frpc.toml /certs && \
+    chmod 600 /frpc.toml
 
-USER $USER
+# Download and install FRP client
+RUN set -ex; \
+    ARCH=$(uname -m); \
+    if [ "$ARCH" = "aarch64" ]; then \
+      FRP_URL="https://raw.githubusercontent.com/nextcloud/HaRP/main/exapps_dev/frp_0.61.1_linux_arm64.tar.gz"; \
+    else \
+      FRP_URL="https://raw.githubusercontent.com/nextcloud/HaRP/main/exapps_dev/frp_0.61.1_linux_amd64.tar.gz"; \
+    fi; \
+    echo "Downloading FRP client from $FRP_URL"; \
+    curl -L "$FRP_URL" -o /tmp/frp.tar.gz; \
+    tar -C /tmp -xzf /tmp/frp.tar.gz; \
+    mv /tmp/frp_0.61.1_linux_* /tmp/frp; \
+    cp /tmp/frp/frpc /usr/local/bin/frpc; \
+    chmod +x /usr/local/bin/frpc; \
+    rm -rf /tmp/frp /tmp/frp.tar.gz
+
+# Install GOSU
+RUN set -eux; \
+	\
+	apk add --no-cache --virtual .gosu-deps \
+		ca-certificates \
+		dpkg \
+		gnupg \
+	; \
+	\
+	dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')"; \
+	wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch"; \
+	wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc"; \
+	\
+	export GNUPGHOME="$(mktemp -d)"; \
+	gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4; \
+	gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu; \
+	gpgconf --kill all; \
+	rm -rf "$GNUPGHOME" /usr/local/bin/gosu.asc; \
+	\
+	apk del --no-network .gosu-deps; \
+	\
+	chmod +x /usr/local/bin/gosu
 
 WORKDIR /app
 
 COPY --chown=$USER:$USER requirements.txt requirements.txt
 COPY --chown=$USER:$USER main.py .
 COPY --chown=$USER:$USER workflow_ocr_backend/ ./workflow_ocr_backend
-COPY --chown=$USER:$USER --chmod=755 healthcheck.sh /healthcheck.sh
+COPY --chown=$USER:$USER start.sh /start.sh
+COPY --chown=$USER:$USER healthcheck.sh /healthcheck.sh
 
-RUN pip install --break-system-packages -r requirements.txt && \
-    pip install --break-system-packages -U Celery && \
-    pip install --break-system-packages git+https://github.com/ocrmypdf/OCRmyPDF-EasyOCR.git
+RUN chmod +x /start.sh && \
+	chmod +x /healthcheck.sh && \
+	chown -R $USER:$USER /app && \
+	pip install --break-system-packages -r requirements.txt && \
+	pip install --break-system-packages -U Celery && \
+	pip install --break-system-packages git+https://github.com/ocrmypdf/OCRmyPDF-EasyOCR.git
 
-ENTRYPOINT ["python3", "-u", "main.py"]
+ENTRYPOINT ["/bin/sh", "-c", "exec gosu \"$USER\" /start.sh python3 -u main.py"]
 HEALTHCHECK --interval=10s --timeout=10s --retries=5 CMD /healthcheck.sh
 
 FROM app AS devcontainer
@@ -30,7 +78,7 @@ COPY --chown=$USER:$USER requirements-dev.txt requirements-dev.txt
 
 # Install dev dependencies and set up sudo
 USER root
-RUN apt install -y git curl make gnupg && \
+RUN apt install -y git docker-cli curl make gnupg && \
     rm -rf /var/lib/apt/lists/* && \
     echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER && \
     chmod 0440 /etc/sudoers.d/$USER
