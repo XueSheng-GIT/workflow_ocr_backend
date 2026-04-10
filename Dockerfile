@@ -1,4 +1,4 @@
-FROM python:3.12-alpine AS app
+FROM pytorch/pytorch:2.11.0-cuda13.0-cudnn9-runtime AS app
 
 ARG USER=serviceuser
 
@@ -6,36 +6,60 @@ ENV USER=$USER
 ENV HOME=/home/$USER
 ENV GOSU_VERSION=1.19
 
-RUN apk update && \
-    apk add --no-cache ocrmypdf $(apk search tesseract-ocr-data- | sed 's/-[0-9].*//') curl bash frp ca-certificates && \
-    adduser -D $USER && \
-	touch /frpc.toml && \
+RUN apt update && \
+    apt install -y sudo git curl make gnupg ghostscript unpaper tesseract-ocr ca-certificates unzip python3-venv && \
+    rm -rf /var/lib/apt/lists/* && \
+    useradd -m $USER && \
+    touch /frpc.toml && \
     mkdir -p /certs && \
     chown -R $USER:$USER /frpc.toml /certs && \
     chmod 600 /frpc.toml
 
-# Install GOSU
+# Download and install gosu
 RUN set -eux; \
-	\
-	apk add --no-cache --virtual .gosu-deps \
-		ca-certificates \
-		dpkg \
-		gnupg \
-	; \
-	\
-	dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')"; \
-	wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch"; \
-	wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc"; \
-	\
-	export GNUPGHOME="$(mktemp -d)"; \
-	gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4; \
-	gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu; \
-	gpgconf --kill all; \
-	rm -rf "$GNUPGHOME" /usr/local/bin/gosu.asc; \
-	\
-	apk del --no-network .gosu-deps; \
-	\
-	chmod +x /usr/local/bin/gosu
+    apt-get install --update -y --no-install-recommends ca-certificates gnupg wget; \
+    \
+    dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')"; \
+    wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch"; \
+    wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc"; \
+    \
+    export GNUPGHOME="$(mktemp -d)"; \
+    gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4; \
+    gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu; \
+    gpgconf --kill all; \
+    rm -rf "$GNUPGHOME" /usr/local/bin/gosu.asc; \
+    \
+    apt-get purge -y wget; \
+    apt-get autoremove -y; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/*; \	
+    \
+    chmod +x /usr/local/bin/gosu
+
+# Download and install FRP client
+RUN set -ex; \
+    ARCH=$(uname -m); \
+    if [ "$ARCH" = "aarch64" ]; then \
+      FRP_URL="https://raw.githubusercontent.com/nextcloud/HaRP/main/exapps_dev/frp_0.61.1_linux_arm64.tar.gz"; \
+    else \
+      FRP_URL="https://raw.githubusercontent.com/nextcloud/HaRP/main/exapps_dev/frp_0.61.1_linux_amd64.tar.gz"; \
+    fi; \
+    echo "Downloading FRP client from $FRP_URL"; \
+    curl -L "$FRP_URL" -o /tmp/frp.tar.gz; \
+    tar -C /tmp -xzf /tmp/frp.tar.gz; \
+    mv /tmp/frp_0.61.1_linux_* /tmp/frp; \
+    cp /tmp/frp/frpc /usr/local/bin/frpc; \
+    chmod +x /usr/local/bin/frpc; \
+    rm -rf /tmp/frp /tmp/frp.tar.gz
+
+# Download EasyOCR models (unzip is required!)
+RUN mkdir -p /home/$USER/.EasyOCR/model && \
+    cd /home/$USER/.EasyOCR/model && \
+    curl -fsSL -O https://github.com/JaidedAI/EasyOCR/releases/download/v1.3/latin_g2.zip && \
+    curl -fsSL -O https://github.com/JaidedAI/EasyOCR/releases/download/v1.3/english_g2.zip && \
+    curl -fsSL -O https://github.com/JaidedAI/EasyOCR/releases/download/pre-v1.1.6/craft_mlt_25k.zip && \
+    unzip '*.zip' && rm -f *.zip && \
+    chown -R $USER:$USER /home/$USER/.EasyOCR
 
 WORKDIR /app
 
@@ -43,11 +67,23 @@ COPY --chown=$USER:$USER requirements.txt requirements.txt
 COPY --chown=$USER:$USER main.py .
 COPY --chown=$USER:$USER workflow_ocr_backend/ ./workflow_ocr_backend
 COPY --chown=$USER:$USER start.sh /start.sh
+COPY --chown=$USER:$USER healthcheck.sh /healthcheck.sh
+
 RUN chmod +x /start.sh && \
-	chown -R $USER:$USER /app && \
-	pip install -r requirements.txt
+    chmod +x /healthcheck.sh && \
+    chown -R $USER:$USER /app
+
+RUN python3 -m venv /opt/venv && \
+    . /opt/venv/bin/activate && \
+    pip install -r requirements.txt && \
+    pip install -U Celery && \
+    pip install git+https://github.com/ocrmypdf/OCRmyPDF-EasyOCR.git
+
+ENV PATH="/opt/venv/bin:$PATH"
+ENV VIRTUAL_ENV="/opt/venv"
 
 ENTRYPOINT ["/bin/sh", "-c", "exec gosu \"$USER\" /start.sh python3 -u main.py"]
+HEALTHCHECK --interval=10s --timeout=10s --retries=5 CMD /healthcheck.sh
 
 FROM app AS devcontainer
 
@@ -55,11 +91,12 @@ COPY --chown=$USER:$USER requirements-dev.txt requirements-dev.txt
 
 # Install dev dependencies and set up sudo
 USER root
-RUN apk add --no-cache sudo git docker-cli make gnupg && \
+RUN apt install -y git docker-cli curl make gnupg && \
+    rm -rf /var/lib/apt/lists/* && \
     echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER && \
     chmod 0440 /etc/sudoers.d/$USER
 USER $USER
-RUN pip install -r requirements-dev.txt
+RUN pip install --break-system-packages -r requirements-dev.txt
 
 FROM devcontainer AS test
 
