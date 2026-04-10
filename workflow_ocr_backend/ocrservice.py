@@ -37,7 +37,7 @@ class OcrService:
             self.logger.debug(f"{current_time} - Finished processing file {file_name}")
 
             return OcrResult(filename=file_name, content_type="application/pdf", recognized_text=sidecar_text, file_content=file_base64)
-        
+
         finally:
             output_buffer.close()
             sidecar_buffer.close()
