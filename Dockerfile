@@ -1,4 +1,4 @@
-FROM pytorch/pytorch:2.11.0-cuda13.0-cudnn9-runtime AS app
+FROM pytorch/pytorch:2.13.0-cuda13.2-cudnn9-runtime AS app
 
 ARG USER=serviceuser
 
