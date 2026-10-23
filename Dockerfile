@@ -1,4 +1,4 @@
-FROM pytorch/pytorch:2.13.0-cuda13.2-cudnn9-runtime AS app
+FROM pytorch/pytorch:2.14.1-cuda13.2-cudnn9-runtime AS app
 
 ARG USER=serviceuser
 
@@ -66,12 +66,8 @@ WORKDIR /app
 COPY --chown=$USER:$USER requirements.txt requirements.txt
 COPY --chown=$USER:$USER main.py .
 COPY --chown=$USER:$USER workflow_ocr_backend/ ./workflow_ocr_backend
-<<<<<<< Updated upstream
 COPY --chown=$USER:$USER start.sh /start.sh
 COPY --chown=$USER:$USER healthcheck.sh /healthcheck.sh
-=======
->>>>>>> Stashed changes
-COPY --chown=$USER:$USER --chmod=666 frpc.toml /frpc.toml
 
 RUN chmod +x /start.sh && \
     chmod +x /healthcheck.sh && \
